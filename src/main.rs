@@ -1,27 +1,53 @@
-// include!("math/Matrix.rs");
+use std::fs::File;
+use std::io::Read;
 
 mod markdown
 {
-    pub fn parse(source: String) -> String
+    pub fn parse(source: &str) -> String
     {
         let mut result: String = String::new();
+        let mut tmp: String = String::from(source);
 
         if source.len() < 1
         {
             return result;
         }
 
+        tmp = tmp.replace("\\n", "</br>");
+        // divider
+        tmp = tmp.replace("\\---", "<hr>");
+        // image with style
+        tmp = regex::Regex::new(r"!\[(.+?)\]\((.+?)\)\{(.+?)\}")
+            .unwrap()
+            .replace_all(&tmp, "<img src=\"$2\" alt=\"$1\" style=\"$3\">")
+            .to_string();
+        // images
+        tmp = regex::Regex::new(r"!\[(.+?)\]\((.+?)\)")
+            .unwrap()
+            .replace_all(&tmp, "<img src=\"$2\" alt=\"$1\">")
+            .to_string();
+        // links
+        tmp = regex::Regex::new(r"\[(.+?)\]\((.+?)\)")
+            .unwrap()
+            .replace_all(&tmp, "<a href=\"$2\">$1</a>")
+            .to_string();
+        // bold
+        tmp = regex::Regex::new(r"\*\*(.+?)\*\*")
+            .unwrap()
+            .replace_all(&tmp, "<b>$1</b>")
+            .to_string();
+
         let mut in_paragraph: bool = false;
 
-        for line in source.split("\n")
+        for line in tmp.split("\n")
         {
             // TODO: We never open and close p on same line, so might as well make them exclusive
             let mut result_line: String = line.to_string();
 
-            // TODO: handle \--- devider
-            // TODO: handle <<TAG>><<TAG>>
-
-            result_line = line.replace("\\n", "</br>");
+            if line.starts_with("<<TAG>>")
+            {
+                continue;
+            }
 
             // if not in paragragh then make one
             if !in_paragraph
@@ -41,8 +67,6 @@ mod markdown
                 }
                 else
                 {
-                    // FIXME: Not sure if this case will ever trigger
-                    println!("INFO: Backup new line was triggered");
                     result.push_str("</br>");
                 }
                 continue;
@@ -64,9 +88,13 @@ mod markdown
                     }
                     count
                 };
-                println!("INFO: Header {}", header_count);
+                result_line = format!(
+                    "<h{}>{}</h{}>",
+                    header_count,
+                    &line[header_count..],
+                    header_count
+                );
             }
-
 
             result.push_str(&result_line);
         }
@@ -83,11 +111,12 @@ mod markdown
 
 fn main()
 {
-    println!("Hello, world!");
-    println!(
-        "{}",
-        markdown::parse(format!(
-            "hello world\\nnew line\n\nand another one\n#test\n##test\n\ntest"
-        ))
-    );
+    // let mut file = File::open("cv.md").unwrap();
+    // let mut contents = String::new();
+    // file.read_to_string(&mut contents).unwrap();
+    // println!("{}", markdown::parse(&contents));
 }
+
+
+// Unit tests
+include!("test_markdown.rs");
