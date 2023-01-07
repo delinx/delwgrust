@@ -85,6 +85,10 @@ mod markdown
                         {
                             count += 1;
                         }
+                        else
+                        {
+                            break;
+                        }
                     }
                     count
                 };
