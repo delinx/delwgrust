@@ -232,19 +232,9 @@ fn main()
     index.body += &footer;
     index.save(&(work_dir.to_owned() + web_dir + "index.html"));
 
-    println!("{}", index.generate());
+    // TODO: generate blog paegs
 
-
-    let cv = markdown::parse_file(&(templates_dir.to_owned() + "cv.md"));
-    //println!("{}", cv);
-
-    let mut pg = builder::Page::new();
-    pg.head = "hello".to_string();
-    pg.body = "hello".to_string();
-    pg.add_style("HELLO");
-    pg.add_style(" WORLD");
-
-    //println!("\n\n{}", pg.generate());
+    // TODO: generate blog page with the menu
 }
 
 
