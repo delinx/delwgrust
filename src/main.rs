@@ -1,5 +1,47 @@
 use std::fs::File;
 use std::io::Read;
+use std::path;
+
+mod builder
+{
+    #[derive(Debug)]
+    pub struct Page
+    {
+        pub file_name: String,
+        pub path: String,
+
+        pub head: String,
+        pub body: String,
+    }
+
+    impl Page
+    {
+        pub fn new() -> Self
+        {
+            Page {
+                file_name: "".to_string(),
+                path: "".to_string(),
+                head: "".to_string(),
+                body: "".to_string(),
+            }
+        }
+    }
+
+    pub fn generate(page: &Page) -> String
+    {
+        let mut result: String = format!("");
+        result += "<!DOCTYPE html>";
+        result += "<html>";
+        result += &page.head;
+        result += "<head>";
+        result += "</head>";
+        result += "<body>";
+        result += &page.body;
+        result += "</body>";
+        result += "</html>";
+        return result;
+    }
+}
 
 mod markdown
 {
@@ -109,16 +151,25 @@ mod markdown
             result.push_str("</p>");
         }
 
+        // way to shorten html without modifying parsing logic
+        result = result.replace("<p></p>", "</br>");
+
         return result;
     }
 }
 
 fn main()
 {
-    // let mut file = File::open("cv.md").unwrap();
-    // let mut contents = String::new();
-    // file.read_to_string(&mut contents).unwrap();
+    let mut file = File::open("/home/del/projects/rust/delwgrust/delwg-del.cx/cv.md").unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
     // println!("{}", markdown::parse(&contents));
+
+    let mut pg: builder::Page = builder::Page::new();
+    pg.head = "hello".to_string();
+    pg.body = "hello".to_string();
+
+    println!("\n\n{}", builder::generate(&pg));
 }
 
 
