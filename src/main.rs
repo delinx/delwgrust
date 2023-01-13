@@ -186,6 +186,7 @@ pub mod markdown
 }
 
 use chrono;
+use std::fs;
 
 fn main()
 {
@@ -232,7 +233,59 @@ fn main()
     index.body += &footer;
     index.save(&(work_dir.to_owned() + web_dir + "index.html"));
 
-    // TODO: generate blog paegs
+    // find all blog pages and build them
+    let mut blog_links: Vec<String> = vec![];
+    for file in fs::read_dir(&(templates_dir.to_owned() + "blog")).unwrap()
+    {
+        let file_name = file.unwrap().path().display().to_string();
+        if file_name.ends_with(".md")
+        {
+            let page_file = file_name.replace(".md", ".html");
+            let mut blog_page = builder::Page::new();
+            let blog_markdown = builder::file_to_string(&(work_dir.to_owned() + &file_name));
+
+            blog_page.add_style("../style.css");
+            blog_page.add_style("../textStyle.css");
+            let blog_content = markdown::parse(&blog_markdown);
+            blog_page.body += &menu_blog;
+            blog_page.body += &blog_content;
+            blog_page.body += &footer;
+            blog_page.save(
+                &(work_dir.to_owned() + &web_dir + "blog/" + &page_file.split("/").last().unwrap()),
+            );
+
+            // add link of this blog page to blog page host
+            let tag = "<<TAG>>";
+            let marker_start = blog_markdown.find(tag).unwrap() + tag.len();
+            let marker_end = blog_markdown[marker_start..].find(tag).unwrap() + tag.len();
+            let tag_raw = &blog_markdown[marker_start..marker_end];
+
+            let date = tag_raw.split('|').last().unwrap();
+            let title = tag_raw.split('|').nth(0).unwrap();
+
+            let link = format!(
+                "[{}] <a href=\"blog/{}\">{}</a></br>",
+                date,
+                &page_file.split("/").last().unwrap(),
+                title
+            );
+            blog_links.push(link);
+        }
+    }
+
+    // blog.html
+    blog_links.sort();
+    blog_links.reverse();
+    let links_string = blog_links.join("");
+
+    let mut blog = builder::Page::new();
+    blog.head = head.clone();
+    blog.add_style("style.css");
+    blog.add_style("textStyle.css");
+    blog.body += &menu;
+    blog.body += &links_string;
+    blog.body += &footer;
+    blog.save(&(work_dir.to_owned() + web_dir + "blog.html"));
 
     // TODO: generate blog page with the menu
 }
