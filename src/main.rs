@@ -79,7 +79,7 @@ fn main()
             let marker_end = blog_markdown[marker_start..].find(tag).unwrap() + tag.len();
             let tag_raw = &blog_markdown[marker_start..marker_end];
 
-            let date = tag_raw.split('|').last().unwrap();
+            let date = tag_raw.split('|').last().unwrap().replace("-", "·");
             let title = tag_raw.split('|').nth(0).unwrap();
 
             let link = format!(
@@ -123,6 +123,7 @@ fn main()
     contact.add_style("style.css");
     contact.add_style("textStyle.css");
     contact.body += &menu;
+    contact.body += &links;
     contact.body += &markdown::parse_file(&(templates_dir.to_owned() + "contact.md"));
     contact.body += &footer;
     contact.save(&(work_dir.to_owned() + web_dir + "contact.html"));
