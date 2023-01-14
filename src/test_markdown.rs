@@ -132,3 +132,21 @@ fn test_markdown_bold_advanced()
         "<p><b>Hello this is a test.</b></br>Hello this is a test.</p>"
     );
 }
+
+// test jump tag
+#[test]
+fn test_markdown_jump_tag()
+{
+    let input = "<<<I am tag>>>";
+    let output = "<p><div id=\"I am tag\"></div></p>";
+    assert_eq!(markdown::parse(input), output);
+}
+
+// test jump tag in sentence
+#[test]
+fn test_markdown_jump_tag_text()
+{
+    let input = "test <<<I am tag>>> this is test";
+    let output = "<p>test <div id=\"I am tag\"></div> this is test</p>";
+    assert_eq!(markdown::parse(input), output);
+}

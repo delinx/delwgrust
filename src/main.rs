@@ -102,11 +102,30 @@ fn main()
     blog.add_style("style.css");
     blog.add_style("textStyle.css");
     blog.body += &menu;
-    blog.body += &links_string;
+    blog.body += &markdown::parse_file(&(templates_dir.to_owned() + "blog.md"));
+    blog.body = blog.body.replace("{LINKS}", &links_string);
     blog.body += &footer;
     blog.save(&(work_dir.to_owned() + web_dir + "blog.html"));
 
-    // TODO: generate blog page with the menu
+    // projects.html
+    let mut projects = builder::Page::new();
+    projects.head = head.clone();
+    projects.add_style("style.css");
+    projects.add_style("textStyle.css");
+    projects.body += &menu;
+    projects.body += &markdown::parse_file(&(templates_dir.to_owned() + "projects.md"));
+    projects.body += &footer;
+    projects.save(&(work_dir.to_owned() + web_dir + "projects.html"));
+
+    // contact.html
+    let mut contact = builder::Page::new();
+    contact.head = head.clone();
+    contact.add_style("style.css");
+    contact.add_style("textStyle.css");
+    contact.body += &menu;
+    contact.body += &markdown::parse_file(&(templates_dir.to_owned() + "contact.md"));
+    contact.body += &footer;
+    contact.save(&(work_dir.to_owned() + web_dir + "contact.html"));
 }
 
 

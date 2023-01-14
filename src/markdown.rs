@@ -37,6 +37,11 @@ pub fn parse(source: &str) -> String
         .unwrap()
         .replace_all(&tmp, "<a href=\"$2\">$1</a>")
         .to_string();
+    // jump tag
+    tmp = regex::Regex::new(r"[<][<][<](.+?)[>][>][>]")
+        .unwrap()
+        .replace_all(&tmp, "<div id=\"$1\"></div>")
+        .to_string();
     // bold
     tmp = regex::Regex::new(r"\*\*(.+?)\*\*")
         .unwrap()
