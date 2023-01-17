@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, str::FromStr};
 
 pub mod builder;
 pub mod markdown;
@@ -52,8 +52,19 @@ fn main()
     index.body += &footer;
     index.save(&(work_dir.to_owned() + web_dir + "index.html"));
 
+    // RSS feed
+    let mut rss = builder::file_to_string(&(templates_dir.to_owned() + "rss.xml"));
+    rss = rss.replace("{YEAR}", &year);
+    rss = rss.replace(
+        "{LAST_BUILD_DATE}",
+        &chrono::offset::Local::now()
+            .format("%a, %d %b %Y %T GMT")
+            .to_string(),
+    );
+
     // find all blog pages and build them
     let mut blog_links: Vec<String> = vec![];
+    let mut blog_links_raw: Vec<String> = vec![];
     for file in fs::read_dir(&(templates_dir.to_owned() + "blog")).unwrap()
     {
         let file_name = file.unwrap().path().display().to_string();
@@ -89,6 +100,12 @@ fn main()
                 title
             );
             blog_links.push(link);
+            blog_links_raw.push(format!(
+                "{}|{}|{}",
+                title,
+                tag_raw.split('|').last().unwrap(),
+                "https://del.cx/blog/".to_owned() + &page_file.split("/").last().unwrap()
+            ));
         }
     }
 
@@ -127,6 +144,35 @@ fn main()
     contact.body += &markdown::parse_file(&(templates_dir.to_owned() + "contact.md"));
     contact.body += &footer;
     contact.save(&(work_dir.to_owned() + web_dir + "contact.html"));
+
+    // RSS feed items
+    let rss_item_template = builder::file_to_string(&(templates_dir.to_owned() + "rss-item.xml"));
+    blog_links_raw.sort();
+    blog_links_raw.reverse();
+    let mut xml_items = "".to_owned();
+    for blog in blog_links_raw
+    {
+        let title = blog.split('|').nth(0).unwrap();
+        let mut date = blog.split('|').nth(1).unwrap().to_owned() + " 22:10:57 +00:00";
+        let link = blog.split('|').nth(2).unwrap();
+        let dt = chrono::DateTime::parse_from_str(&date, "%Y-%m-%d %H:%M:%S %z").unwrap();
+
+        let mut rss_item = rss_item_template.clone();
+        rss_item = rss_item.replace("{TITLE}", title);
+        rss_item = rss_item.replace("{LINK}", link);
+        rss_item = rss_item.replace("{DESCRIPTION}", title);
+        rss_item = rss_item.replace(
+            "{PUB_DATE}",
+            &dt.format("%a, %d %b %Y 00:00:00 GMT").to_string(),
+        );
+        rss = rss.replace(
+            "{LAST_PUB_DATE}",
+            &dt.format("%a, %d %b %Y 00:00:00 GMT").to_string(),
+        );
+        xml_items += &format!("{}", rss_item);
+    }
+    rss = rss.replace("{ITEMS}", &xml_items);
+    println!("{}", rss);
 }
 
 

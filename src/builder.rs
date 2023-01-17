@@ -54,3 +54,9 @@ pub fn file_to_string(source: &str) -> String
     file.read_to_string(&mut contents).unwrap();
     return contents;
 }
+
+pub fn string_to_file(source: &str, path: &str)
+{
+    let mut file = File::create(path).unwrap();
+    writeln!(&mut file, "{}", source).unwrap();
+}
