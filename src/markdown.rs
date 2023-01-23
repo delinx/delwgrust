@@ -47,6 +47,10 @@ pub fn parse(source: &str) -> String
         .unwrap()
         .replace_all(&tmp, "<b>$1</b>")
         .to_string();
+    tmp = regex::Regex::new(r"__(.+?)__")
+        .unwrap()
+        .replace_all(&tmp, "<i>$1</i>")
+        .to_string();
 
     let mut in_paragraph: bool = false;
 

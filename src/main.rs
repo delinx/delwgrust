@@ -172,7 +172,7 @@ fn main()
         xml_items += &format!("{}", rss_item);
     }
     rss = rss.replace("{ITEMS}", &xml_items);
-    println!("{}", rss);
+    builder::string_to_file(&rss, &(work_dir.to_owned() + web_dir + "rss.xml"));
 }
 
 
